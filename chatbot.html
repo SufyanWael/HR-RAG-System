@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrightPath HR Chatbot</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      background:#0f172a;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+      gap:14px;
+    }
+
+    .back-link{
+      color:#93c5fd;
+      text-decoration:none;
+      font-size:14px;
+    }
+    .back-link:hover{ text-decoration:underline; }
+
+    .chat-container{
+      width:420px;
+      max-width:92vw;
+      height:700px;
+      background:#111827;
+      border-radius:20px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      box-shadow:0 0 30px rgba(0,0,0,.4);
+    }
+
+    .header{
+      background:#1e3a8a;
+      color:white;
+      padding:18px;
+      text-align:center;
+    }
+
+    .header h2{
+      font-size:22px;
+    }
+
+    .header p{
+      font-size:13px;
+      opacity:.8;
+      margin-top:5px;
+    }
+
+    .chat-box{
+      flex:1;
+      padding:15px;
+      overflow-y:auto;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      background:#0b1120;
+    }
+
+    .message{
+      max-width:80%;
+      padding:12px 15px;
+      border-radius:15px;
+      line-height:1.5;
+      word-wrap:break-word;
+      font-size:15px;
+      white-space:pre-wrap;
+    }
+
+    .user{
+      align-self:flex-end;
+      background:#2563eb;
+      color:white;
+      border-bottom-right-radius:5px;
+    }
+
+    .bot{
+      align-self:flex-start;
+      background:#1f2937;
+      color:#f1f5f9;
+      border-bottom-left-radius:5px;
+    }
+
+    .typing{
+      font-style:italic;
+      color:#9ca3af;
+      padding-left:5px;
+    }
+
+    .input-area{
+      display:flex;
+      padding:15px;
+      background:#111827;
+      border-top:1px solid #374151;
+      gap:10px;
+    }
+
+    .input-area input{
+      flex:1;
+      padding:12px;
+      border:none;
+      border-radius:12px;
+      outline:none;
+      background:#1f2937;
+      color:white;
+      font-size:15px;
+    }
+
+    .input-area button{
+      width:55px;
+      border:none;
+      border-radius:12px;
+      background:#2563eb;
+      color:white;
+      font-size:20px;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    .input-area button:hover{
+      background:#1d4ed8;
+    }
+
+    .input-area button:disabled{
+      background:#475569;
+      cursor:not-allowed;
+    }
+
+    .chat-box::-webkit-scrollbar{
+      width:5px;
+    }
+
+    .chat-box::-webkit-scrollbar-thumb{
+      background:#334155;
+      border-radius:10px;
+    }
+  </style>
+</head>
+<body>
+
+<a class="back-link" href="index.html">&larr; Back to HR System</a>
+
+<div class="chat-container">
+
+  <div class="header">
+    <h2 id="chatTitle">🤖 Chat</h2>
+    <p>Ask me anything about the employee handbook — powered by n8n + Qdrant</p>
+  </div>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <div class="input-area">
+    <input
+      id="messageInput"
+      type="text"
+      placeholder="Type a message..."
+      disabled
+    >
+
+    <button id="sendBtn" disabled>➤</button>
+  </div>
+
+</div>
+
+<script>
+
+
+const DEFAULT_CONFIG = {
+  webhookUrl: "https://sufyan-wael-bahig.app.n8n.cloud/webhook/HR-RAG-System",
+  title: "BrightPath HR Chatbot",
+  placeholder: "Type your message...",
+  welcome: "👋 Hello! I'm the BrightPath HR assistant. Ask me about leave, remote work, benefits, or anything else in the handbook.",
+  messageField: "message",
+  replyField: "reply",
+  method: "POST"
+};
+
+let CONFIG = DEFAULT_CONFIG;
+
+const chatTitle = document.getElementById("chatTitle");
+const chatBox = document.getElementById("chatBox");
+const input = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+
+function addMessage(text, sender){
+
+  const msg = document.createElement("div");
+  msg.className = `message ${sender}`;
+  msg.innerText = text;
+
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  return msg;
+}
+
+function applyConfig(cfg){
+  CONFIG = Object.assign({}, DEFAULT_CONFIG, cfg);
+
+  document.title = CONFIG.title;
+  chatTitle.textContent = "🤖 " + CONFIG.title;
+  input.placeholder = CONFIG.placeholder;
+
+  chatBox.innerHTML = "";
+  addMessage(CONFIG.welcome, "bot");
+
+  input.disabled = false;
+  sendBtn.disabled = false;
+  input.focus();
+}
+
+async function loadConfig(){
+  try {
+    const res = await fetch("config.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("config.json responded with " + res.status);
+    const cfg = await res.json();
+    applyConfig(cfg);
+  } catch (err) {
+    console.error("Could not load config.json, using defaults.", err);
+    applyConfig(DEFAULT_CONFIG);
+  }
+}
+
+async function sendMessage(){
+
+  const message = input.value.trim();
+
+  if(!message) return;
+
+  addMessage(message,"user");
+  input.value="";
+
+  sendBtn.disabled=true;
+
+  const typing = document.createElement("div");
+  typing.className="typing";
+  typing.innerText="AI is typing...";
+  chatBox.appendChild(typing);
+  chatBox.scrollTop = chatBox.scrollHeight;
+
+  try{
+
+    const body = {};
+    body[CONFIG.messageField] = message;
+
+    const response = await fetch(CONFIG.webhookUrl,{
+      method: CONFIG.method || "POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    chatBox.removeChild(typing);
+
+    if(!response.ok){
+      throw new Error("Webhook Error");
+    }
+
+    const data = await response.json();
+
+    const aiReply =
+      data[CONFIG.replyField] ||
+      data.reply ||
+      data.output ||
+      data.response ||
+      data.text ||
+      "No response received.";
+
+    addMessage(aiReply,"bot");
+
+  }
+  catch(error){
+
+    if(chatBox.contains(typing)){
+      chatBox.removeChild(typing);
+    }
+
+    addMessage("❌ Unable to connect to chatbot. Please try again in a moment.","bot");
+    console.error(error);
+  }
+
+  sendBtn.disabled=false;
+  input.focus();
+}
+
+sendBtn.addEventListener("click",sendMessage);
+
+input.addEventListener("keypress",function(e){
+  if(e.key==="Enter") sendMessage();
+});
+
+loadConfig();
+
+</script>
+
+</body>
+</html>

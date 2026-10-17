@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrightPath HR System</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      background:#0f172a;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      min-height:100vh;
+    }
+
+    .hr-container{
+      width:420px;
+      max-width:92vw;
+      background:#111827;
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:0 0 30px rgba(0,0,0,.4);
+    }
+
+    .header{
+      background:#1e3a8a;
+      color:white;
+      padding:26px 18px;
+      text-align:center;
+    }
+
+    .header h2{
+      font-size:24px;
+    }
+
+    .header p{
+      font-size:13px;
+      opacity:.8;
+      margin-top:6px;
+    }
+
+    .links{
+      padding:24px 20px 28px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      background:#0b1120;
+    }
+
+
+    .hr-link{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:16px 18px;
+      border-radius:14px;
+      background:#1f2937;
+      color:#f1f5f9;
+      text-decoration:none;
+      font-size:16px;
+      transition:.2s;
+      border:1px solid #374151;
+    }
+
+    .hr-link:hover{
+      background:#2563eb;
+      border-color:#2563eb;
+      transform:translateY(-1px);
+    }
+
+    .hr-link .icon{
+      font-size:22px;
+      width:28px;
+      text-align:center;
+    }
+
+    .hr-link .label{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+
+    .hr-link .label strong{
+      font-size:16px;
+    }
+
+    .hr-link .label span{
+      font-size:12.5px;
+      color:#9ca3af;
+    }
+
+    .links::-webkit-scrollbar{
+      width:5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="hr-container">
+
+  <div class="header">
+    <h2>🏢 BrightPath HR System</h2>
+    <p>One place for everything HR</p>
+  </div>
+
+  <div class="links" id="linksBox"></div>
+
+</div>
+
+<script>
+
+  const LINKS = [
+    {
+      icon: "📝",
+      title: "Leave Request",
+      description: "Submit a leave request form",
+      url: "https://sufyan-wael-bahig.app.n8n.cloud/form/296db74b-2f3d-41e5-be21-5b8c880b1e59"
+    },
+    {
+      icon: "🤖",
+      title: "HR Chatbot",
+      description: "Ask questions about the handbook",
+      url: "chatbot.html"
+    }
+  ];
+
+  const box = document.getElementById("linksBox");
+
+  LINKS.forEach(function(link){
+    const a = document.createElement("a");
+    a.className = "hr-link";
+    a.href = link.url;
+    a.target = link.url.startsWith("http") ? "_blank" : "_self";
+    a.rel = "noopener";
+
+    const icon = document.createElement("span");
+    icon.className = "icon";
+    icon.textContent = link.icon;
+
+    const label = document.createElement("span");
+    label.className = "label";
+
+    const strong = document.createElement("strong");
+    strong.textContent = link.title;
+
+    const span = document.createElement("span");
+    span.textContent = link.description;
+
+    label.appendChild(strong);
+    label.appendChild(span);
+    a.appendChild(icon);
+    a.appendChild(label);
+    box.appendChild(a);
+  });
+
+</script>
+
+</body>
+</html>

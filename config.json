@@ -1,0 +1,9 @@
+{
+  "webhookUrl": "https://sufyan-wael-bahig.app.n8n.cloud/webhook/HR-RAG-System",
+  "title": "BrightPath HR Chatbot",
+  "placeholder": "Type your message...",
+  "welcome": "👋 Hello! I'm the BrightPath HR assistant. Ask me about leave, remote work, benefits, or anything else in the handbook.",
+  "messageField": "message",
+  "replyField": "reply",
+  "method": "POST"
+}
